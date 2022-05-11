@@ -15,11 +15,11 @@ namespace DataStructuresAndAlgorithms
             Count = 0;
         }
 
-        public bool IsEmpty() => Count == 0;
+        public bool IsEmpty { get { return Count == 0; } }
 
         public void Add(T value)
         {
-            if(IsEmpty())
+            if(IsEmpty)
             {
                 InitializeList(value);
             }
@@ -32,7 +32,7 @@ namespace DataStructuresAndAlgorithms
 
         public void Add(LinkedList<T> linkedList)
         {
-            if (linkedList.IsEmpty()) return;
+            if (linkedList.IsEmpty) return;
             if(_tail == null)
             {
                 this._head = linkedList._head;
@@ -63,7 +63,7 @@ namespace DataStructuresAndAlgorithms
 
         public LinkedList<T> Reverse()
         {
-            if (IsEmpty() || _head == _tail || _head == null) return this;
+            if (IsEmpty || _head == _tail || _head == null) return this;
             InitializePointers(out LinkedListNode<T>? _prev, out LinkedListNode<T>? _current, out LinkedListNode<T>? _next);
             IterateThroughListAndReversePointers(ref _prev, ref _current, ref _next);
             LinkedListNode<T> temp = _head;
