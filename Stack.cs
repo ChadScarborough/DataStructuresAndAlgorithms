@@ -2,7 +2,7 @@
 
 namespace DataStructuresAndAlgorithms
 {
-    public class Stack<T> : IEnumerable
+    public class Stack<T> : IEnumerable, ISearchable<T>
     {
         public Stack()
         {
@@ -38,6 +38,11 @@ namespace DataStructuresAndAlgorithms
             {
                 yield return _linkedList[i];
             }
+        }
+
+        public bool Contains(T value)
+        {
+            return _linkedList.Contains(value);
         }
     }
 }

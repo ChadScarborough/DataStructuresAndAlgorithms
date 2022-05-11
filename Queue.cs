@@ -2,7 +2,7 @@
 
 namespace DataStructuresAndAlgorithms
 {
-    public class Queue<T> : IEnumerable
+    public class Queue<T> : IEnumerable, ISearchable<T>
     {
         public Queue()
         {
@@ -37,6 +37,11 @@ namespace DataStructuresAndAlgorithms
             {
                 yield return _linkedList[i];
             }
+        }
+
+        public bool Contains(T value)
+        {
+            return _linkedList.Contains(value);
         }
     }
 }
