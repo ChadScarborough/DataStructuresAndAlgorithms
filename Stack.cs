@@ -44,6 +44,5 @@ namespace DataStructuresAndAlgorithms
         {
             return _linkedList.Contains(value);
         }
-
     }
 }
