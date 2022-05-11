@@ -4,8 +4,8 @@ namespace DataStructuresAndAlgorithms
 {
     public class LinkedList<T> : IEnumerable, ISearchable<T>
     {
-        internal Node<T>? _head;
-        internal Node<T>? _tail;
+        internal LinkedListNode<T>? _head;
+        internal LinkedListNode<T>? _tail;
         public int Count { get; private set; }
 
         public LinkedList() 
@@ -15,17 +15,10 @@ namespace DataStructuresAndAlgorithms
             Count = 0;
         }
 
-        public LinkedList(T value)
-        {
-            InitializeList(value);
-            Count = 1;
-        }
-
         public bool IsEmpty() => Count == 0;
 
         public void Add(T value)
         {
-            
             if(IsEmpty())
             {
                 InitializeList(value);
@@ -37,9 +30,26 @@ namespace DataStructuresAndAlgorithms
             Count++;
         }
 
+        public void Add(LinkedList<T> linkedList)
+        {
+            if (linkedList.IsEmpty()) return;
+            if(_tail == null)
+            {
+                this._head = linkedList._head;
+                this._tail = linkedList._tail;
+                this.Count = linkedList.Count;
+                return;
+            }
+            _tail._nextNode = linkedList._head;
+            Count += linkedList.Count;
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return new LinkedListEnumerator<T>(this);
+            for(int i = 0; i < Count; i++)
+            {
+                yield return this[i];
+            }
         }
 
         public bool Contains(T value)
@@ -54,8 +64,11 @@ namespace DataStructuresAndAlgorithms
         public LinkedList<T> Reverse()
         {
             if (IsEmpty() || _head == _tail || _head == null) return this;
-            InitializePointers(out Node<T>? _prev, out Node<T>? _current, out Node<T>? _next);
+            InitializePointers(out LinkedListNode<T>? _prev, out LinkedListNode<T>? _current, out LinkedListNode<T>? _next);
             IterateThroughListAndReversePointers(ref _prev, ref _current, ref _next);
+            LinkedListNode<T> temp = _head;
+            _head = _tail;
+            _tail = temp;
             return this;
         }
 
@@ -71,16 +84,22 @@ namespace DataStructuresAndAlgorithms
             }
         }
 
-        public void RemoveAt(int index)
+        public T RemoveAt(int index)
         {
+            T output;
             if(index < 0 || index >= Count) throw new IndexOutOfRangeException();
             if(index == 0)
             {
+                output = _head.Value;
                 RemoveHeadNode();
-                return;
+                return output;
             }
-            Node<T>? node = _head;
-            Node<T>? prev = _head;
+            if (index == Count - 1)
+            {
+                return Pop();
+            }
+            LinkedListNode<T>? node = _head;
+            LinkedListNode<T>? prev = _head;
             for(int i = 0; i < index; i++)
             {
                 if (node is null || prev is null || node._nextNode is null || prev._nextNode is null)
@@ -91,13 +110,67 @@ namespace DataStructuresAndAlgorithms
                 if (i != 0) prev = prev._nextNode;
             }
             if (prev is null || node is null) throw new IndexOutOfRangeException();
+            output = node.Value;
             prev._nextNode = node._nextNode;
             node._nextNode = null;
+            Count--;
+            return output;
         }
 
+        public T Pop()
+        {
+            LinkedListNode<T>? node = _head;
+            LinkedListNode<T>? prev = null;
+            T output;
+            if (Count == 1)
+            {
+                output = _head.Value;
+                _head = null;
+                _tail = null;
+                Count = 0;
+                return output;
+            }
+            if (node == null) throw new Exception("Null linked list");
+            while(node._nextNode != null)
+            {
+                prev = node;
+                node = node._nextNode;
+            }
+            output = node.Value;
+            _tail = prev;
+            if (prev is null) return output;
+            prev._nextNode = null;
+            Count--;
+            return output;
+        }
 
-
-        //TODO: Remove, Insert, Pop, Add(overload for another linked list)
+        public void Insert(T value, int index)
+        {
+            if (index > Count || index < 0) throw new IndexOutOfRangeException();
+            if(index == Count)
+            {
+                AppendToList(value);
+                Count++;
+                return;
+            }
+            LinkedListNode<T>? newNode = new LinkedListNode<T>(value);
+            LinkedListNode<T>? node = _head;
+            if(index == 0)
+            {
+                newNode._nextNode = node;
+                _head = newNode;
+                Count++;
+                return;
+            }
+            for(int i = 0; i < index - 1; i++)
+            {
+                if (this[i] == null || node == null) throw new IndexOutOfRangeException();
+                node = node._nextNode;
+            }
+            newNode._nextNode = node._nextNode;
+            node._nextNode = newNode;
+            Count++;
+        }
 
         private void RemoveHeadNode()
         {
@@ -118,30 +191,30 @@ namespace DataStructuresAndAlgorithms
         private T IterateThroughListAndReturnValueAtIndex(int index)
         {
             if (_head == null) throw new IndexOutOfRangeException();
-            Node<T> node = _head;
+            LinkedListNode<T> node = _head;
             for (int i = 0; i < index; i++)
             {
                 if (node._nextNode == null) throw new IndexOutOfRangeException();
                 node = node._nextNode;
             }
-            return node._value;
+            return node.Value;
         }
 
         private void InitializeList(T value)
         {
-            _head = new Node<T>(value);
+            _head = new LinkedListNode<T>(value);
             _tail = _head;
         }
 
         private void AppendToList(T value)
         {
             if (_tail == null) throw new NullReferenceException("Tail is set to null");
-            Node<T> node = new(value);
-            _tail.SetNext(node);
+            LinkedListNode<T> node = new LinkedListNode<T>(value);
+            _tail._nextNode = node;
             _tail = node;
         }
 
-        private void InitializePointers(out Node<T>? _prev, out Node<T>? _current, out Node<T>? _next)
+        private void InitializePointers(out LinkedListNode<T>? _prev, out LinkedListNode<T>? _current, out LinkedListNode<T>? _next)
         {
             if (_head is null) throw new IndexOutOfRangeException();
             _prev = null;
@@ -149,9 +222,9 @@ namespace DataStructuresAndAlgorithms
             _next = _current._nextNode;
         }
 
-        private void IterateThroughListAndReversePointers(ref Node<T>? _prev, ref Node<T>? _current, ref Node<T>? _next)
+        private void IterateThroughListAndReversePointers(ref LinkedListNode<T>? _prev, ref LinkedListNode<T>? _current, ref LinkedListNode<T>? _next)
         {
-            foreach (Node<T> node in this)
+            for(int i = 0; i < Count; i++)
             {
                 if (_current is null) throw new IndexOutOfRangeException();
                 _current._nextNode = _prev;
@@ -165,55 +238,15 @@ namespace DataStructuresAndAlgorithms
         }
     }
 
-    internal class LinkedListEnumerator<T> : IEnumerator<Node<T>>
+    internal class LinkedListNode<S>
     {
-        private LinkedList<T> _linkedList;
+        internal S Value { get; }
+        internal LinkedListNode<S>? _nextNode = null;
 
-        public LinkedListEnumerator(LinkedList<T> linkedList)
-        {
-            if (linkedList == null) throw new ArgumentNullException("Null linked list");
-            if (linkedList._head == null) throw new Exception("Null head node");
-            _linkedList = linkedList;
-            Current = linkedList._head;
-        }
-
-        public Node<T> Current { get; private set; }
-
-        object? IEnumerator.Current => Current;
-
-        public void Dispose(){ }
-
-        public bool MoveNext()
-        {
-            if(Current._nextNode == null)
-            {
-                return false;
-            }
-            Current = Current._nextNode;
-            return true;
-        }
-
-        public void Reset()
-        {
-            if (_linkedList._head == null) throw new Exception("Null head node");
-            Current = _linkedList._head;
-        }
-    }
-
-    internal class Node<S>
-    {
-        internal S _value;
-        internal Node<S>? _nextNode = null;
-
-        internal Node(S value)
+        internal LinkedListNode(S value)
         {
             if (value == null) { throw new ArgumentNullException(nameof(value)); }
-            _value = value;
-        }
-
-        internal void SetNext(Node<S> node)
-        {
-            _nextNode = node;
+            Value = value;
         }
     }
 }
